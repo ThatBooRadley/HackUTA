@@ -1,69 +1,85 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 struct map
 {
     char* key;
     char** value;
-};
+} dict;
 
-FILE* translate(FILE* din, struct map* dict);
-void convert(FILE* fin, struct map* dict, int length);
+struct map* translate(char* in, struct map* dict);
+void convert(char* in, struct map* dict, int length);
 
 int main(int argc, char** argv)
 {
-    FILE* din = fopen(argv[1], "r");
+    FILE* din = fopen(argv[1], "r");    //dictionary first
     int defSize = 0;
+
     fscanf(din, "%d", &defSize);
+    fclose(din);
+
     struct map* dictionary = calloc(defSize, sizeof(struct map));
-
-    dictionary = translate(din, dictionary);
-
+    dictionary = translate(argv[1], dictionary);
+    convert(argv[2], dictionary, defSize);
     return 0;
 }
 
-struct map* translate(FILE* din, struct map* dict)
+struct map* translate(char* in, struct map* dict)
 {
+    FILE* din = fopen(in, "r");
     int index = 0;
     while(!feof(din))
     {
-        char* buffer;
-        fscanf(din, "%s", &buffer);
-        if(strcmp(buffer, "<<"))
+        char buffer[20];
+        fscanf(din, "%s", buffer);
+        if(strcmp(buffer, "<<") == 0)
         {
-            fscanf(din, "%s", &(dict[index]).key);
+            printf("<<\n");
+            char buff[256];
+            fscanf(din, "%s", buff);
+            (dict[index]).key = malloc(strlen(buff));
+            memcpy((dict[index]).key, buff, strlen(buff)+1);
+            printf("%s , %s, %d, %d\n", (dict[index]).key, buff, strlen((dict[index]).key), strlen(buff));
         }
-        else if(strcmp(buffer, "::"))
+        else if(strcmp(buffer, "::") == 0)
         {
+            printf("::\n");
             int i=1;
             do
             {
                 fscanf(din, "%s", buffer);
+                
                 (dict[index]).value[i] = buffer;
-            }while(strcmp(buffer, ">>"));
-            (dict[index]).value[0] = i;
+            }while(strcmp(buffer, ">>") != 0);
+            sprintf((dict[index]).value[0], "%d", i);
+            printf(">>\n");
         }
-    }    
+    }
+    printf("%d", index);
     return dict;
 }
 
-void convert(FILE* fin, struct map* dict, int length)
+void convert(char* in, struct map* dict, int length)
 {
+    FILE* fin = fopen(in, "r");
     FILE* fout = fopen("fout.c", "w");
     int index = 0;
     while(!feof(fin))
     {
-        char* buffer;
-        fscanf(fin, "%s", &buffer);
+        char buffer[8];
+        fscanf(fin, "%s", buffer);
         for(int i=0; i<length; i++)
         {
-            if(strcmp(buffer, (dict[i]).key))
+            if(strcmp(buffer, (dict[i]).key) == 0)
             {
-                for(int j=1; j < (dict[i]).value[0];j++)
+                for(int j=1; j < atoi((dict[i]).value[0]);j++)
                 {
                     fprintf(fout, "%s", (dict[i]).value[j]);
                 }
+                break;
             }
         }
     }
+    fclose(fout);
 }
