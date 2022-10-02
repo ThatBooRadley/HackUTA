@@ -31,7 +31,7 @@ struct map* translate(char* in, struct map* dict)
     int index = 0;
     while(!feof(din))
     {
-        char buffer[20];
+        char buffer[256];
         fscanf(din, "%s", buffer);
         if(strcmp(buffer, "<<") == 0)
         {
@@ -46,13 +46,19 @@ struct map* translate(char* in, struct map* dict)
         {
             printf("::\n");
             int i=1;
+            (dict[index]).value = malloc(sizeof((dict[index]).value));
             do
             {
                 fscanf(din, "%s", buffer);
-                
-                (dict[index]).value[i] = buffer;
+                (dict[index]).value[i] = malloc(strlen(buffer)+1);
+                memcpy((dict[index]).value[i], buffer, strlen(buffer)+1);
+                i++;
             }while(strcmp(buffer, ">>") != 0);
             sprintf((dict[index]).value[0], "%d", i);
+            for(int j=1;j<i;j++)
+            {
+                printf("%s\n", (dict[index]).value[j]);
+            }
             printf(">>\n");
         }
     }
