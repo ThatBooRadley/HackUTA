@@ -25,7 +25,7 @@ int main(int argc, char** argv)
     return 0;
 }
 
-struct map* translate(char* in, struct map* dict)
+struct map* translate(char* in, struct map* dict) //converts map input file into map array structure
 {
     FILE* din = fopen(in, "r");
     int index = 0;
@@ -35,34 +35,38 @@ struct map* translate(char* in, struct map* dict)
         fscanf(din, "%s", buffer);
         if(strcmp(buffer, "<<") == 0)
         {
-            printf("<<\n");
             char buff[256];
             fscanf(din, "%s", buff);
             (dict[index]).key = malloc(strlen(buff));
             memcpy((dict[index]).key, buff, strlen(buff)+1);
-            printf("%s , %s, %d, %d\n", (dict[index]).key, buff, strlen((dict[index]).key), strlen(buff));
         }
         else if(strcmp(buffer, "::") == 0)
         {
-            printf("::\n");
-            int i=1;
             (dict[index]).value = malloc(sizeof((dict[index]).value));
-            do
+            int i=1;
+            (dict[index]).value[i] = malloc(4);
+            fscanf(din, "%s", buffer);
+            while(strcmp(buffer, ">>") != 0)
             {
-                fscanf(din, "%s", buffer);
                 (dict[index]).value[i] = malloc(strlen(buffer)+1);
                 memcpy((dict[index]).value[i], buffer, strlen(buffer)+1);
                 i++;
-            }while(strcmp(buffer, ">>") != 0);
-            sprintf((dict[index]).value[0], "%d", i);
-            for(int j=1;j<i;j++)
-            {
-                printf("%s\n", (dict[index]).value[j]);
+                fscanf(din, "%s", buffer);
             }
-            printf(">>\n");
+            itoa(i, (dict[index]).value[0], 10);
+            index++;
         }
     }
-    printf("%d", index);
+    printf("%s\n", (dict[0]).value[2]);
+    for(int i=0; i< 2;i++)
+    {
+        printf("<<%s ::", dict[i].key);
+        for(int j=0;j< atoi(dict[i].value[0]);j++)
+        {
+            printf("%s ", (dict[i]).value[j]);
+        }
+        printf(">>\n");
+    }
     return dict;
 }
 
