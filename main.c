@@ -11,17 +11,18 @@ struct map
 struct map* translate(char* in, struct map* dict);
 void convert(char* in, struct map* dict, int length);
 
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 {
+    char * argv2 = malloc(strlen(argv[2])+1);
+    memcpy(argv2, argv[2], strlen(argv[2])+1);
     FILE* din = fopen(argv[1], "r");    //dictionary first
     int defSize = 0;
-
     fscanf(din, "%d", &defSize);
     fclose(din);
-
     struct map* dictionary = calloc(defSize, sizeof(struct map));
     dictionary = translate(argv[1], dictionary);
-    convert(argv[2], dictionary, defSize);
+    convert(argv2, dictionary, defSize);
+
     return 0;
 }
 
@@ -37,15 +38,16 @@ struct map* translate(char* in, struct map* dict) //converts map input file into
         {
             char buff[256];
             fscanf(din, "%s", buff);
-            (dict[index]).key = malloc(strlen(buff));
+            (dict[index]).key = malloc(strlen(buff)+1);
             memcpy((dict[index]).key, buff, strlen(buff)+1);
         }
         else if(strcmp(buffer, "::") == 0)
         {
             (dict[index]).value = malloc(sizeof((dict[index]).value));
             int i=1;
-            (dict[index]).value[i] = malloc(4);
             fscanf(din, "%s", buffer);
+            (dict[index]).value[0] = malloc(sizeof(buffer));
+            (dict[index]).value[i] = malloc(sizeof(buffer));
             while(strcmp(buffer, ">>") != 0)
             {
                 (dict[index]).value[i] = malloc(strlen(buffer)+1);
@@ -53,20 +55,26 @@ struct map* translate(char* in, struct map* dict) //converts map input file into
                 i++;
                 fscanf(din, "%s", buffer);
             }
-            itoa(i, (dict[index]).value[0], 10);
+            if(index == 1)
+                printf("%s\n", (dict[1]).value[0]);
+            sprintf((dict[index]).value[0], "%d",i);
+            if(index == 1)
+                printf("%s\n", (dict[1]).value[0]);
             index++;
         }
     }
-    printf("%s\n", (dict[0]).value[2]);
-    for(int i=0; i< 2;i++)
-    {
-        printf("<<%s ::", dict[i].key);
-        for(int j=0;j< atoi(dict[i].value[0]);j++)
+    
+        //TESTING TRANSLATE
+        for(int i=0; i< 2;i++)
         {
-            printf("%s ", (dict[i]).value[j]);
+            printf("<<%s ::", dict[i].key);
+            for(int j=0;j< atoi(dict[i].value[0]);j++)
+            {
+                printf("%s ", (dict[i]).value[j]);
+            }
+            printf(">>\n");
         }
-        printf(">>\n");
-    }
+    
     return dict;
 }
 
@@ -74,22 +82,25 @@ void convert(char* in, struct map* dict, int length)
 {
     FILE* fin = fopen(in, "r");
     FILE* fout = fopen("fout.c", "w");
+
     int index = 0;
-    while(!feof(fin))
+    char buffer[256];
+    while(index < length)
     {
-        char buffer[8];
         fscanf(fin, "%s", buffer);
-        for(int i=0; i<length; i++)
+        for(int j=0;j<sizeof(dict[0])/sizeof(dict);j++) //each word in dict
         {
-            if(strcmp(buffer, (dict[i]).key) == 0)
+            if(memcmp(buffer, (dict[j]).key, strlen(buffer)) == 0)
             {
-                for(int j=1; j < atoi((dict[i]).value[0]);j++)
+                for(int c=1; c < atoi((dict[j]).value[0]);c++)  //each word in value
                 {
-                    fprintf(fout, "%s", (dict[i]).value[j]);
+                    printf("%s ", (dict[j]).value[c]);
+                    fprintf(fout, "%s ", (dict[j]).value[c]);
                 }
                 break;
             }
         }
+        index++;
     }
     fclose(fout);
 }

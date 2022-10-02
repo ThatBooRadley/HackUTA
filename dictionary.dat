@@ -1,0 +1,12 @@
+2
+<<
+meow
+::
+#include <stdio.h>
+void main(){
+>>
+<<
+nya
+::
+printf("Hello World!");} //test
+>>
