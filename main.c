@@ -41,12 +41,12 @@ struct map* translate(char* in, struct map* dict) //converts map input file into
     int index = 0;
     while(!feof(din))
     {
-        char buffer[256];
-        fscanf(din, "%s", buffer);
+        char *buffer = malloc(256);
+        fscanf(din, "%[^\n]%*c", buffer);
         if(strcmp(buffer, "<<") == 0)
         {
             char buff[256];
-            fscanf(din, "%s", buff);
+            fscanf(din, "%[^\n]%*c", buff);
             (dict[index]).key = malloc(strlen(buff)+1);
             memcpy((dict[index]).key, buff, strlen(buff)+1);
         }
@@ -54,7 +54,7 @@ struct map* translate(char* in, struct map* dict) //converts map input file into
         {
             (dict[index]).value = malloc(sizeof((dict[index]).value));
             int i=1;
-            fscanf(din, "%s", buffer);
+            fscanf(din, "%[^\n]%*c", buffer);
             (dict[index]).value[0] = malloc(sizeof(buffer));
             (dict[index]).value[i] = malloc(sizeof(buffer));
             while(strcmp(buffer, ">>") != 0)
@@ -62,28 +62,23 @@ struct map* translate(char* in, struct map* dict) //converts map input file into
                 (dict[index]).value[i] = malloc(strlen(buffer)+1);
                 memcpy((dict[index]).value[i], buffer, strlen(buffer)+1);
                 i++;
-                fscanf(din, "%s", buffer);
+
+                buffer = malloc(2);
+                sprintf(buffer, "\n");
+                (dict[index]).value[i] = malloc(strlen(buffer)+1);
+                memcpy((dict[index]).value[i], buffer, strlen(buffer)+1);
+                i++;
+
+                fscanf(din, "%[^\n]%*c", buffer);
             }
             sprintf((dict[index]).value[0], "%d",i);
             index++;
         }
     }
-    /*
-        //TESTING TRANSLATE
-        for(int i=0; i< 2;i++)
-        {
-            printf("<<%s ::", dict[i].key);
-            for(int j=0;j< atoi(dict[i].value[0]);j++)
-            {
-                printf("%s ", (dict[i]).value[j]);
-            }
-            printf(">>\n");
-        }
-    */
     return dict;
 }
 
-void convert(char* in, struct map* dict, int length)
+void convert(char* in, struct map* dict, int length)    //converts custom code input into runnable c code
 {
     FILE* fin = fopen(in, "r");
     FILE* fout = fopen("fout.c", "w");
